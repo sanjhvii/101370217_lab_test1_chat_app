@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+
+    <style>
+        body{
+            background-color: black;
+            color: white;
+        }
+
+        .container{
+            width: 40vw;
+            height: 35vh;
+            margin: auto;
+            margin-top: 32.5vh;
+            background-color: rgb(151, 210, 228);
+            border: 5px solid rgb(11, 10, 10);
+        }
+
+        #heading{
+            font-size: 2vw;
+            height: 5vh;
+            background-color: rgb(58, 35, 205);
+            padding-left: 0.5vw;
+        }
+
+        #heading button{
+            width: 10vw;
+            float: right;
+            height: 3vh;
+            margin: 1vh;
+        }
+
+        .grid-container{
+            display: grid;
+            grid-template-columns: 10vw 30vw;
+        }
+
+        #message{
+            height: 30vh;
+            background-color: rgb(224, 182, 220);
+            text-align: center;
+        }
+
+        #displayMessage{
+            height: 25vh;
+            overflow-y: scroll;
+        }
+
+        #typeMessage{
+            height: 5vh;
+            margin-top: 1vh;
+            text-align: center;
+        }
+
+        #typeMessage input{
+            width: 23vw;
+            height: 3vh;
+        }
+
+        #typeMessage button{
+            width: 4vw;
+            height: 3vh;
+            
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="heading">
+            <label>ChatBox</label>
+            <a href="/"><button>Leave Room</button></a>
+        </div>
+        
+        <div class="grid-container">
+            <div>
+                <form action="/chat" id="roomForm">
+                    <label>Select Room : </label>
+                    <select id="roomName" name="room">
+                        <option value="news">news</option>
+                        <option value="Covid-19">Covid-19</option>
+                        <option value="NodeJS">NodeJS</option>
+                    </select>
+                    <button>Select</button>
+                </form>
+
+                <!-- <form action="/chat" id="roomForm">
+                    <label>Select User : </label>
+                    <select id="users" >
+                        <option class="loggedUser"></option>
+                    </select>
+                    <button>Select</button>
+                </form> -->
+                
+            </div>
+
+            <div id="message">
+                <div id="displayMessage">
+                    <div class="message">
+
+                    </div>
+                </div>
+    
+                <div id="typeMessage">
+                    <form action="/chat" id="chatForm">
+                        <input id="msgField" name="from_user" type="text" placeholder="Type here" required>
+                        <button>Send</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const chatForm = document.getElementById('chatForm');
+        const roomForm = document.getElementById('roomForm');
+        const chat = io();
+
+        chat.on('message' , msg => {
+            displayMessage(msg);
+        });
+
+        // chat.on('loggedUser' , name => {
+        //     consolelog('from chat html' + name)
+        //     // displayUser(name);
+        // })
+
+
+        roomForm.addEventListener('submit' , (event) => {
+            event.preventDefault();
+
+            const room = document.getElementById('roomName').value;
+
+            chat.emit('joinRoom' , room);
+            displayMessage(`You are in '${room}' room`);
+        })
+
+
+        chatForm.addEventListener('submit' , (event) =>{
+            event.preventDefault();
+
+            const text = event.target.elements.msgField.value;
+
+            // Emit chat message to server
+            chat.emit('chatMessage' , text)
+            document.getElementById('msgField').value = "";
+        });
+
+        displayMessage = (msg) => {
+            const div = document.createElement('div');
+            div.classList.add('message');
+            div.innerHTML = `<p>${msg}</p>`;
+            document.getElementById('displayMessage').appendChild(div);
+        }
+
+        // displayUser = (name) => {
+        //     const option = document.getElementById('option');
+        //     option.classList.add('loggedUser');
+        //     option.innerHTML = `${name}`;
+        //     document.getElementById('users').appendChild(option);
+        // }
+
+        chat.on('output' , result => {
+            console.log(result);
+        })
+        
+
+
+
+
+    </script>
+</body>
+</html>
